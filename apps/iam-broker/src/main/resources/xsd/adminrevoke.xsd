@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://hyundaidealer.com/AdminRevokeService/"
+           xmlns:tns="http://hyundaidealer.com/AdminRevokeService/">
+
+    <!-- Caller must include x-admin-key (and optionally x-admin-mfa) as SOAP headers
+         OR pass them as in-payload elements; see AdminRevokeEndpoint for resolution. -->
+    <xs:element name="AdminRevoke">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="AdminKey" type="xs:string"/>
+                <xs:element name="TokenID"  type="xs:string" minOccurs="0"/>
+                <xs:element name="UserID"   type="xs:string" minOccurs="0"/>
+                <xs:element name="Reason"   type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="AdminRevokeResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Revoked"  type="xs:boolean"/>
+                <xs:element name="Type"     type="xs:string" minOccurs="0"/>
+                <xs:element name="ID"       type="xs:string" minOccurs="0"/>
+                <xs:element name="ERETURN"                minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="TYPE"    type="xs:string"/>
+                            <xs:element name="MESSAGE" type="xs:string" minOccurs="0"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

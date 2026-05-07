@@ -1,0 +1,9 @@
+# Local-profile overrides. Active when `spring.profiles.active=local`.
+# Most env vars are already wired in application-sso.yaml; this file exists so a
+# developer running outside Docker can point at localhost:port pairs cleanly.
+sso:
+  external:
+    pid-validate-url:   ${PID_VALIDATE_URL:http://localhost:3006/auth/validate-launch-token}
+    dealers-attr-url:   ${DEALERS_ATTR_URL:http://localhost:3004}
+    dashboard-url:      ${DASHBOARD_URL:http://localhost:3007}
+    broker-public-url:  ${BROKER_PUBLIC_URL:http://localhost:3003}

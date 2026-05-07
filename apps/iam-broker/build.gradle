@@ -1,0 +1,64 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.10'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.hma.idpbrokerservice'
+version = '4.0.0'
+description = 'IAM Broker — Spring port of poc/apps/iam-broker (Node.js) for "slot-in" demo'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Lombok (matches client backend/build.gradle)
+    compileOnly 'org.projectlombok:lombok:1.18.42'
+    annotationProcessor 'org.projectlombok:lombok:1.18.42'
+
+    // Spring core
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // SOAP / JAXB / WSDL (matches client)
+    implementation 'org.springframework.boot:spring-boot-starter-web-services'
+    implementation 'org.springframework.ws:spring-ws-core:4.0.10'
+    implementation 'wsdl4j:wsdl4j:1.6.3'
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
+    runtimeOnly 'org.glassfish.jaxb:jaxb-runtime:4.0.0'
+    implementation 'jakarta.xml.soap:jakarta.xml.soap-api:3.0.0'
+    implementation 'com.sun.xml.messaging.saaj:saaj-impl:3.0.3'
+
+    // XML-DSig — Apache Santuario for SAML RSA-SHA256 signing
+    implementation 'org.apache.santuario:xmlsec:3.0.5'
+
+    // Database (Postgres for POC; client uses Oracle ojdbc11)
+    runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
+    // OpenAPI (matches client) — exposes /v3/api-docs and /swagger-ui.html for SOAP-adjacent testing
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3'
+
+    // Tests
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+springBoot {
+    mainClass = 'com.hma.idpbrokerservice.IamBrokerApplication'
+}

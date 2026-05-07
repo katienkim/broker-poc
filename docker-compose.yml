@@ -1,0 +1,195 @@
+# broker-spring stack — Spring Boot broker drop-in for the Node POC.
+#
+# Same Traefik hostnames / ports as ../poc/docker-compose.yml so /etc/hosts
+# is unchanged and any URL you bookmarked still works. The Node mocks
+# (portal, mock-pid, vendor-app, role-api, dashboard) are *not* duplicated —
+# we build them straight out of ../poc/apps/<service>. Postgres replaces all
+# the in-memory stores in the Node broker (token-registry, revocation,
+# bypass) so the broker is truly stateless on restart.
+#
+# Run:
+#   cd broker-spring
+#   cp .env.example .env
+#   docker compose up --build
+#
+# /etc/hosts (one-time, same as the Node POC):
+#   127.0.0.1 broker.sso.test portal.sso.test vendor.sso.test \
+#             pid.sso.test dashboard.sso.test
+#
+# Use a dedicated network/volume name so this stack and the Node /poc one
+# can run side-by-side without colliding.
+services:
+  traefik:
+    image: traefik:v3.6.12
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.network=broker-spring-net
+      - --entrypoints.web.address=:80
+      - --api.insecure=true
+    ports:
+      - "8000:80"
+      - "8888:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - broker-spring-net
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: iam_broker
+      POSTGRES_USER: iam_broker
+      POSTGRES_PASSWORD: iam_broker_pw
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    networks:
+      - broker-spring-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U iam_broker -d iam_broker"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  # Node mocks — built straight out of ../poc/apps. Unchanged.
+  role-api:
+    build: ../poc/apps/role-api
+    restart: unless-stopped
+    networks:
+      - broker-spring-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3004/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Spring broker — the artifact this stack exists to demonstrate.
+  iam-broker:
+    build: ./apps/iam-broker
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/iam_broker
+      SPRING_DATASOURCE_USERNAME: iam_broker
+      SPRING_DATASOURCE_PASSWORD: iam_broker_pw
+      AES256_SHARED_KEY: ${AES256_SHARED_KEY:-poc-aes256-key-must-be-32bytes!!}
+      RC4_SHARED_KEY: ${RC4_SHARED_KEY:-poc-rc4-shared-key}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-poc-admin-api-key}
+      DEALERS_ATTR_URL: http://role-api:3004
+      BROKER_PUBLIC_URL: http://broker.sso.test:8000
+      PID_VALIDATE_URL: http://mock-pid:3006/auth/validate-launch-token
+      DASHBOARD_URL: http://flow-dashboard:3007
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.iam-broker.rule=Host(`broker.sso.test`)
+      - traefik.http.routers.iam-broker.entrypoints=web
+      - traefik.http.services.iam-broker.loadbalancer.server.port=3003
+    depends_on:
+      postgres:
+        condition: service_healthy
+      role-api:
+        condition: service_healthy
+      mock-pid:
+        condition: service_healthy
+    networks:
+      - broker-spring-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3003/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  mock-pid:
+    build: ../poc/apps/mock-pid
+    restart: unless-stopped
+    environment:
+      DASHBOARD_URL: http://flow-dashboard:3007
+      BROKER_PUBLIC_URL: http://broker.sso.test:8000
+      DEALERS_API_KEY: ${DEALERS_API_KEY:-poc-dealers-api-key}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.mock-pid.rule=Host(`pid.sso.test`)
+      - traefik.http.routers.mock-pid.entrypoints=web
+      - traefik.http.services.mock-pid.loadbalancer.server.port=3006
+    networks:
+      - broker-spring-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3006/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app-portal:
+    build: ../poc/apps/portal
+    restart: unless-stopped
+    environment:
+      BROKER_PUBLIC_URL: http://broker.sso.test:8000
+      PID_PUBLIC_URL: http://pid.sso.test:8000
+      PID_INTERNAL_URL: http://mock-pid:3006
+      DEALERS_ATTR_URL: http://role-api:3004
+      DEALERS_API_KEY: ${DEALERS_API_KEY:-poc-dealers-api-key}
+      DASHBOARD_URL: http://flow-dashboard:3007
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.portal.rule=Host(`portal.sso.test`)
+      - traefik.http.routers.portal.entrypoints=web
+      - traefik.http.services.portal.loadbalancer.server.port=3000
+    depends_on:
+      iam-broker:
+        condition: service_healthy
+    networks:
+      - broker-spring-net
+
+  app-vendor-app:
+    build: ../poc/apps/vendor-app
+    restart: unless-stopped
+    environment:
+      BROKER_URL: http://iam-broker:3003
+      BROKER_PUBLIC_URL: http://broker.sso.test:8000
+      VENDOR_PUBLIC_URL: http://vendor.sso.test:8000
+      AES256_SHARED_KEY: ${AES256_SHARED_KEY:-poc-aes256-key-must-be-32bytes!!}
+      RC4_SHARED_KEY: ${RC4_SHARED_KEY:-poc-rc4-shared-key}
+      DASHBOARD_URL: http://flow-dashboard:3007
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.vendor-app.rule=Host(`vendor.sso.test`)
+      - traefik.http.routers.vendor-app.entrypoints=web
+      - traefik.http.services.vendor-app.loadbalancer.server.port=3005
+    depends_on:
+      iam-broker:
+        condition: service_healthy
+    networks:
+      - broker-spring-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3005/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  flow-dashboard:
+    build: ../poc/apps/dashboard
+    restart: unless-stopped
+    environment:
+      BROKER_URL: http://iam-broker:3003
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=Host(`dashboard.sso.test`)
+      - traefik.http.routers.dashboard.entrypoints=web
+      - traefik.http.services.dashboard.loadbalancer.server.port=3007
+    networks:
+      - broker-spring-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3007/health || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  broker-spring-net:
+    driver: bridge
+
+volumes:
+  pg-data:

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://hyundaidealer.com/PublishTokenService/"
+           xmlns:tns="http://hyundaidealer.com/PublishTokenService/">
+
+    <!-- Mirrors client publishtoken.xsd shape: PARAMIN → PUBLISHOUT (htxtToken + ERETURN + URL_D/URL_M).
+         The flow_id field is broker-specific and lets the dashboard correlate steps. -->
+
+    <xs:element name="PublishToken">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="LaunchToken"               type="xs:string" minOccurs="0"/>
+                <xs:element name="SourceSYS_ID"              type="xs:string" minOccurs="0"/>
+                <xs:element name="TargetSYS_ID"              type="xs:string" minOccurs="0"/>
+                <xs:element name="UserID"                    type="xs:string" minOccurs="0"/>
+                <xs:element name="CompanyCode"               type="xs:string" minOccurs="0"/>
+                <xs:element name="FlowID"                    type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="PublishTokenResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="htxtToken"     type="xs:string" minOccurs="0"/>
+                <xs:element name="UserID"        type="xs:string" minOccurs="0"/>
+                <xs:element name="SourceSYS_ID"  type="xs:string" minOccurs="0"/>
+                <xs:element name="TargetSYS_ID"  type="xs:string" minOccurs="0"/>
+                <xs:element name="ERETURN"                       minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="TYPE"    type="xs:string"/>
+                            <xs:element name="MESSAGE" type="xs:string" minOccurs="0"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="URL_D"         type="xs:string" minOccurs="0"/>
+                <xs:element name="URL_M"         type="xs:string" minOccurs="0"/>
+                <xs:element name="Format"        type="xs:string" minOccurs="0"/>
+                <xs:element name="JTI"           type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>

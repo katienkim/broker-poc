@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata"
+  entityID="SPGlobalnew_allowCU" ID="http://10.189.200.230:8000">
+  <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+    <KeyDescriptor use="signing">
+      <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
+        <X509Data>
+          <X509Certificate>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</X509Certificate>
+        </X509Data>
+      </KeyInfo>
+    </KeyDescriptor>
+    <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
+      Location="http://10.189.200.230:8000/sso/receive" />
+  </IDPSSODescriptor>
+  <Organization>
+    <OrganizationName xml:lang="en">Hyundai</OrganizationName>
+    <OrganizationDisplayName xml:lang="en">hyundai</OrganizationDisplayName>
+    <OrganizationURL xml:lang="en">https://stage.hyundaidealer.com</OrganizationURL>
+  </Organization>
+  <ContactPerson contactType="technical">
+    <Company>hyundai</Company>
+    <GivenName>katie</GivenName>
+    <SurName>kim</SurName>
+    <EmailAddress>katiekim@haeaus.com</EmailAddress>
+  </ContactPerson>
+</EntityDescriptor>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+                  xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+                  xmlns:tns="http://hyundaidealer.com/PublishTokenService/"
+                  xmlns:xs="http://www.w3.org/2001/XMLSchema"
+                  targetNamespace="http://hyundaidealer.com/PublishTokenService/"
+                  name="publishtoken">
+    <wsdl:types>
+        <xs:schema targetNamespace="http://hyundaidealer.com/PublishTokenService/">
+            <xs:include schemaLocation="../xsd/publishtoken.xsd"/>
+        </xs:schema>
+    </wsdl:types>
+    <wsdl:message name="PublishTokenRequest"><wsdl:part name="parameters" element="tns:PublishToken"/></wsdl:message>
+    <wsdl:message name="PublishTokenResponse"><wsdl:part name="parameters" element="tns:PublishTokenResponse"/></wsdl:message>
+    <wsdl:portType name="PublishTokenService">
+        <wsdl:operation name="PublishToken">
+            <wsdl:input  message="tns:PublishTokenRequest"/>
+            <wsdl:output message="tns:PublishTokenResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="PublishTokenServiceSoapBinding" type="tns:PublishTokenService">
+        <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+        <wsdl:operation name="PublishToken">
+            <soap:operation soapAction=""/>
+            <wsdl:input><soap:body use="literal"/></wsdl:input>
+            <wsdl:output><soap:body use="literal"/></wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="PublishTokenService">
+        <wsdl:port name="PublishTokenServicePort" binding="tns:PublishTokenServiceSoapBinding">
+            <soap:address location="/ws"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

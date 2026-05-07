@@ -1,0 +1,49 @@
+sso:
+  enabled: true
+
+  # Token-format settings — IGTK matches client TokenGenerator semantics
+  token:
+    default-prefix: H_                # Hyundai (HMA); G_ for Genesis (GMA)
+    timestamp-format: yyyyMMddHHmmssSSS
+    igtk:
+      ttl-seconds: 3600
+    saml:
+      ttl-seconds: 300
+    aes256:
+      ttl-seconds: 60
+      # AES-256-GCM key — 32 bytes. POC default; override via env.
+      shared-key: ${AES256_SHARED_KEY:poc-aes256-key-must-be-32bytes!!}
+    rc4:
+      ttl-seconds: 30
+      shared-key: ${RC4_SHARED_KEY:poc-rc4-shared-key}
+    wpc-otp:
+      ttl-seconds: 60
+
+  # Outbound URLs — same env vars as the Node broker so docker-compose stays drop-in
+  external:
+    pid-validate-url: ${PID_VALIDATE_URL:http://mock-pid:3006/auth/validate-launch-token}
+    dealers-attr-url: ${DEALERS_ATTR_URL:http://role-api:3004}
+    dashboard-url:    ${DASHBOARD_URL:http://flow-dashboard:3007}
+    broker-public-url: ${BROKER_PUBLIC_URL:http://broker.sso.test:8000}
+
+  # Admin guard — header values that must accompany /ws/admin SOAP calls
+  admin:
+    api-key: ${ADMIN_API_KEY:poc-admin-api-key}
+    require-mfa-header: true          # x-admin-mfa: true required for bypass
+
+  # Rate limits — port of poc/apps/iam-broker/src/lib/rate-limiter.js
+  rate-limit:
+    otp:
+      per-ip-limit: 100
+      per-ip-window-ms: 60000
+      lockout-failures: 3
+      lockout-window-ms: 60000
+      lockout-duration-ms: 300000
+
+  # Bypass settings — port of poc/apps/iam-broker/src/lib/bypass-store.js
+  bypass:
+    max-duration-minutes: 240
+
+  # Static target-system fallback (used only if DB is empty on first boot;
+  # real catalog lives in IA_TB_SSO_SYS_MNGMT_M and is seeded by Flyway V2)
+  target-systems-seed-on-empty: true

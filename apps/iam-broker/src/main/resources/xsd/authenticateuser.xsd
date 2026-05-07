@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://hyundaidealer.com/AuthenticateUserService/"
+           xmlns:tns="http://hyundaidealer.com/AuthenticateUserService/">
+
+    <!-- Vendor-side validation. Replaces POST /token/validate + POST /token/consume.
+         Single round-trip: vendor sends the token; broker decodes/looks up,
+         flips consumed=true atomically, returns user attrs + ERETURN.
+         "Token aggregation validity" check happens here per Yoonmi/Ahn Dae Hyun. -->
+
+    <xs:element name="AuthenticateUser">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Token"   type="xs:string"/>
+                <xs:element name="Format"  type="xs:string" minOccurs="0"/>
+                <xs:element name="JTI"     type="xs:string" minOccurs="0"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="AuthenticateUserResponse">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Valid"        type="xs:boolean"/>
+                <xs:element name="UserID"       type="xs:string" minOccurs="0"/>
+                <xs:element name="Role"         type="xs:string" minOccurs="0"/>
+                <xs:element name="Brand"        type="xs:string" minOccurs="0"/>
+                <xs:element name="DealerCode"   type="xs:string" minOccurs="0"/>
+                <xs:element name="UserType"     type="xs:string" minOccurs="0"/>
+                <xs:element name="Igtk"         type="xs:string" minOccurs="0"/>
+                <xs:element name="ExpiresAt"    type="xs:string" minOccurs="0"/>
+                <xs:element name="ERETURN"                       minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="TYPE"    type="xs:string"/>
+                            <xs:element name="MESSAGE" type="xs:string" minOccurs="0"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
