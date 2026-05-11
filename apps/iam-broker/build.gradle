@@ -16,6 +16,9 @@ java {
 
 repositories {
     mavenCentral()
+    // OpenSAML (transitive of spring-security-saml2-service-provider) isn't on
+    // Maven Central — it's hosted in Shibboleth's repo.
+    maven { url "https://build.shibboleth.net/maven/releases/" }
 }
 
 dependencies {
@@ -41,6 +44,18 @@ dependencies {
 
     // XML-DSig — Apache Santuario for SAML RSA-SHA256 signing
     implementation 'org.apache.santuario:xmlsec:3.0.5'
+
+    // Spring Security + SAML2 SP (inbound flow from PID)
+    // - starter-security pulls Spring Security 6 (core, web)
+    // - saml2-service-provider adds OpenSAML4 wiring, AuthnRequest builder,
+    //   Response validator, RelyingPartyRegistration model
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.security:spring-security-saml2-service-provider'
+
+    // Nimbus JOSE — JWT signing/verification. Used by:
+    //   - Phase 4: HS256 verify mock-pid launch tokens
+    //   - Phase 3: RS256 verify PID id_tokens (mirrors production JwtValidatorImpl)
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.40'
 
     // Database (Postgres for POC; client uses Oracle ojdbc11)
     runtimeOnly 'org.postgresql:postgresql'

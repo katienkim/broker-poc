@@ -18,6 +18,10 @@ public class SsoProperties {
     private RateLimit rateLimit = new RateLimit();
     private Bypass bypass = new Bypass();
     private boolean targetSystemsSeedOnEmpty = true;
+    private Oidc oidc = new Oidc();
+    private SamlSp samlSp = new SamlSp();
+    private SamlIdp samlIdp = new SamlIdp();
+    private MockPid mockPid = new MockPid();
 
     @Data
     public static class Token {
@@ -67,5 +71,53 @@ public class SsoProperties {
     @Data
     public static class Bypass {
         private int maxDurationMinutes;
+    }
+
+    /** OIDC RP config — broker authenticates users at an upstream OIDC IdP (e.g. PID). */
+    @Data
+    public static class Oidc {
+        private Pid pid = new Pid();
+
+        @Data
+        public static class Pid {
+            private boolean enabled;
+            private String clientId;
+            private String clientSecret;
+            private String issuer;
+            private String authorizeEndpoint;
+            private String tokenEndpoint;
+            private String jwksUri;
+            private String redirectUri;
+            private String scopes = "openid profile email";
+            private int stateCodeExpiryMinutes = 5;
+        }
+    }
+
+    /** SP-role config — broker receives SAML assertions from an upstream IdP. */
+    @Data
+    public static class SamlSp {
+        private boolean enabled = true;
+        private String entityId;
+        private String keystorePath;
+        private String keystorePassword;
+        private String keyAlias;
+        private String acsUrl;
+        private String registrationId = "pid";
+        private int metadataValidityDays = 365;
+        private boolean wantAssertionsSigned = true;
+    }
+
+    /** Upstream IdP config — the broker validates assertions signed by this IdP. */
+    @Data
+    public static class SamlIdp {
+        private String entityId;
+        private String metadataPath;
+    }
+
+    /** Mock-PID launch-token signing — see Phase 4 in plan. */
+    @Data
+    public static class MockPid {
+        private boolean requireSignature;
+        private String sharedSecret;
     }
 }

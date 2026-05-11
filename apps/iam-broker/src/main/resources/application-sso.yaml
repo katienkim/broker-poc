@@ -47,3 +47,52 @@ sso:
   # Static target-system fallback (used only if DB is empty on first boot;
   # real catalog lives in IA_TB_SSO_SYS_MNGMT_M and is seeded by Flyway V2)
   target-systems-seed-on-empty: true
+
+  # ── OIDC RP — broker authenticates users at upstream PID via OIDC ────────────
+  # Mirrors production backend/.../OAuthProperties.java. Flow lands at
+  # /api/v1/auth/login → PID → /api/v1/auth/callback.
+  oidc:
+    pid:
+      # Flip to true once client-id / client-secret are wired. Disabled by
+      # default so the broker keeps booting cleanly without OIDC creds.
+      enabled: ${OIDC_PID_ENABLED:false}
+      client-id: ${OIDC_PID_CLIENT_ID:}
+      client-secret: ${OIDC_PID_CLIENT_SECRET:}
+      issuer:             ${OIDC_PID_ISSUER:https://stg-partner.hmg-corp.io/auth}
+      # Per HMG-Partner ID OIDC spec: /authorize, /token, /cert (not /oauth2/*).
+      authorize-endpoint: ${OIDC_PID_AUTHORIZE_ENDPOINT:https://stg-partner.hmg-corp.io/auth/authorize}
+      token-endpoint:     ${OIDC_PID_TOKEN_ENDPOINT:https://stg-partner.hmg-corp.io/auth/token}
+      jwks-uri:           ${OIDC_PID_JWKS_URI:https://stg-partner.hmg-corp.io/auth/cert}
+      redirect-uri:       ${OIDC_PID_REDIRECT_URI:http://broker.sso.test:8000/api/v1/auth/callback}
+      scopes:             ${OIDC_PID_SCOPES:openid profile email}
+      state-code-expiry-minutes: 5
+
+  # ── SAML SP-role — broker receives SAML assertions from upstream IdP ─────────
+  # Keystore holds the SP's signing keypair (separate from the IdP-role keypair
+  # in sso.token.saml — see SamlSpKeyProvider vs SamlSigningKeyProvider).
+  saml-sp:
+    entity-id:        ${SAML_SP_ENTITY_ID:http://broker.sso.test:8000/sso/saml/metadata}
+    keystore-path:    ${SAML_SP_KEYSTORE:keystore/broker-sp.p12}
+    keystore-password: ${SAML_SP_KEYSTORE_PASSWORD:changeit}
+    key-alias:        ${SAML_SP_KEY_ALIAS:broker-sp}
+    # Spring Security SAML2 requires {registrationId} in the ACS pattern;
+    # we use registrationId "pid" so the actual ACS URL is /sso/saml/acs/pid.
+    acs-url:          ${SAML_SP_ACS_URL:http://broker.sso.test:8000/sso/saml/acs/pid}
+    registration-id:  ${SAML_SP_REGISTRATION_ID:pid}
+    # Set false to skip wiring the SAML2 filter chain (e.g., before keytool runs)
+    enabled:          ${SSO_SAML_SP_ENABLED:true}
+    metadata-validity-days: 365
+    want-assertions-signed: true
+
+  # ── Upstream IdP — PID acting as SAML IdP ────────────────────────────────────
+  saml-idp:
+    entity-id:     ${SAML_IDP_ENTITY_ID:https://stg-partner.hmg-corp.io/auth}
+    metadata-path: ${SAML_IDP_METADATA_PATH:/idp-metadata/pid-metadata.xml}
+
+  # ── Mock-PID launch-token signing (Phase 4) ──────────────────────────────────
+  # When require-signature=true, /sso/receive rejects unsigned launch tokens.
+  # Kept false by default so the existing unchanged mock-pid stack still works
+  # while we roll out HS256 on the mock-pid side.
+  mock-pid:
+    require-signature: ${MOCK_PID_REQUIRE_SIGNATURE:false}
+    shared-secret:     ${MOCK_PID_SHARED_SECRET:poc-mock-pid-shared-hs256-secret-min-32-bytes!}

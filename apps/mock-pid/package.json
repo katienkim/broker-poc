@@ -1,0 +1,9 @@
+{
+  "name": "mock-pid",
+  "version": "1.0.0",
+  "description": "Mock Partner ID (HQ IdP) - emulates stg-partner.hmg-corp.io SAML SSO",
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-forge": "^1.3.1"
+  }
+}

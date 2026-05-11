@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><md:EntityDescriptor xmlns:md="urn:oasis:names:tc:SAML:2.0:metadata" ID="_1fe8dd5f-9146-4476-b874-899e499ccab3" entityID="https://stg-partner.hmg-corp.io/auth"><ds:Signature xmlns:ds="http://www.w3.org/2000/09/xmldsig#">
+<ds:SignedInfo>
+<ds:CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+<ds:SignatureMethod Algorithm="http://www.w3.org/2001/04/xmldsig-more#rsa-sha256"/>
+<ds:Reference URI="#_1fe8dd5f-9146-4476-b874-899e499ccab3">
+<ds:Transforms>
+<ds:Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/>
+<ds:Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/>
+</ds:Transforms>
+<ds:DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/>
+<ds:DigestValue>v3cE7Q6Vo6DNLixJ05m83vaFL66Wx8dsGtzpejiI4Ww=</ds:DigestValue>
+</ds:Reference>
+</ds:SignedInfo>
+<ds:SignatureValue>
+WqTUiJ8Dj6puFBCd55rbfIoZK4W0GYWYbof+vOfQv9E4kqlZrk5vnV8w3sxbHiWG8BN1DSt4eNde&#13;
+Zo2YeCoX07bEgavUw6udb2FeV+sxqntSml1LkTJ7YljbLaa7TTPMj4umhwJY3xAjRK/RcR99wPfO&#13;
+ZSI+cokyW4tR+gkdT76+twAKdo8xfAlbv8JjeIMdpB5NwsYMBxwxB4Vj/PZhl98v1eAnrEjHQobW&#13;
+oy8Z3iLhBoKV11CJDxObH/28OvOKxd50UPe3astQ2MKZjYhnhHdVQ+BjjtCvmmVT8Eox0rZ+Tvmb&#13;
+90BiHcGpc8qPmoZT+AU7iNd0JtT58jVzzWAAzA==
+</ds:SignatureValue>
+<ds:KeyInfo><ds:X509Data><ds:X509Certificate>MIIDWTCCAkGgAwIBAgIUSE1GxJuwkZ9wVYEZT9z7rO2l1YowDQYJKoZIhvcNAQELBQAwWzELMAkG
+A1UEBhMCS1IxDjAMBgNVBAgMBVNlb3VsMRAwDgYDVQQHDAdHYW5nbmFtMQwwCgYDVQQKDANITUcx
+HDAaBgNVBAMME3BhcnRuZXIuaG1nLWNvcnAuaW8wIBcNMjUxMDE0MDcwMDMyWhgPMjA1NTEwMDcw
+NzAwMzJaMFsxCzAJBgNVBAYTAktSMQ4wDAYDVQQIDAVTZW91bDEQMA4GA1UEBwwHR2FuZ25hbTEM
+MAoGA1UECgwDSE1HMRwwGgYDVQQDDBNwYXJ0bmVyLmhtZy1jb3JwLmlvMIIBIjANBgkqhkiG9w0B
+AQEFAAOCAQ8AMIIBCgKCAQEAu0iMeHXKtaTbPyPmUBcQv4JUwmCxkACPuD6JapwQPbtUUqRk3VYM
+7WoVkVjVuMdYKbxzYVzmrvXdyxJj7SsRuMM9udRY/21cB7TReB8euA9dzHsJ2caJ9RaCvsTPtbNu
+hAqfkQ4SrlqG22zHV1uxviU50TGJHI5Zg3AlektY3DclT132uaXV7v2Pc2hcmlB+jia154qUnprZ
+hk4iTdAmKF2ZD1iMtGJFVQrV1Ka8tWagF83G6AN0nXynOhYFrXV7xPbVTet9AGAUjkIT/Fh4qvSH
+QSnhNmAHQZ0QROQY3iSasyYlQac/CgrQw4K44W1IcOq3okIAETmWx5xg6FMztQIDAQABoxMwETAP
+BgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQCiLOo/HToDvbOzKPYMcjTR3A5Nj499
+rvhHfyVnzPV+qG8GXfhVu18hc4IhPNfacoS5XxBenQFC6r4+hR5AHnCW76BVwp8ndZ/inKMCX75J
+Zv1Rb/RmPpsbyOVmSAUguEAEjhr7gciEmNt3voCNMoWJFHNiVIJZ9e9CRqGRoLQPUrBHbN5FwGRC
+J74HDfWxfXJz24xW/vOYuBHdBFlTQVP6WoLHbF6wynOnVk0Z5dBSEVtCkeADT/e/JTjRT1dPue4s
+nzLwshyaV2DxwShAIS8kRQPNqT7BbUGX+EGOfjIVWZhkUEVQPXIHwnhumaSIUQg0zkXD/3Fn2OqY
+JlaH4xQ8</ds:X509Certificate></ds:X509Data></ds:KeyInfo></ds:Signature><md:IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol"><md:KeyDescriptor use="signing"><ds:KeyInfo xmlns:ds="http://www.w3.org/2000/09/xmldsig#"><ds:X509Data><ds:X509Certificate>MIIDWTCCAkGgAwIBAgIUSE1GxJuwkZ9wVYEZT9z7rO2l1YowDQYJKoZIhvcNAQELBQAwWzELMAkGA1UEBhMCS1IxDjAMBgNVBAgMBVNlb3VsMRAwDgYDVQQHDAdHYW5nbmFtMQwwCgYDVQQKDANITUcxHDAaBgNVBAMME3BhcnRuZXIuaG1nLWNvcnAuaW8wIBcNMjUxMDE0MDcwMDMyWhgPMjA1NTEwMDcwNzAwMzJaMFsxCzAJBgNVBAYTAktSMQ4wDAYDVQQIDAVTZW91bDEQMA4GA1UEBwwHR2FuZ25hbTEMMAoGA1UECgwDSE1HMRwwGgYDVQQDDBNwYXJ0bmVyLmhtZy1jb3JwLmlvMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu0iMeHXKtaTbPyPmUBcQv4JUwmCxkACPuD6JapwQPbtUUqRk3VYM7WoVkVjVuMdYKbxzYVzmrvXdyxJj7SsRuMM9udRY/21cB7TReB8euA9dzHsJ2caJ9RaCvsTPtbNuhAqfkQ4SrlqG22zHV1uxviU50TGJHI5Zg3AlektY3DclT132uaXV7v2Pc2hcmlB+jia154qUnprZhk4iTdAmKF2ZD1iMtGJFVQrV1Ka8tWagF83G6AN0nXynOhYFrXV7xPbVTet9AGAUjkIT/Fh4qvSHQSnhNmAHQZ0QROQY3iSasyYlQac/CgrQw4K44W1IcOq3okIAETmWx5xg6FMztQIDAQABoxMwETAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQCiLOo/HToDvbOzKPYMcjTR3A5Nj499rvhHfyVnzPV+qG8GXfhVu18hc4IhPNfacoS5XxBenQFC6r4+hR5AHnCW76BVwp8ndZ/inKMCX75JZv1Rb/RmPpsbyOVmSAUguEAEjhr7gciEmNt3voCNMoWJFHNiVIJZ9e9CRqGRoLQPUrBHbN5FwGRCJ74HDfWxfXJz24xW/vOYuBHdBFlTQVP6WoLHbF6wynOnVk0Z5dBSEVtCkeADT/e/JTjRT1dPue4snzLwshyaV2DxwShAIS8kRQPNqT7BbUGX+EGOfjIVWZhkUEVQPXIHwnhumaSIUQg0zkXD/3Fn2OqYJlaH4xQ8</ds:X509Certificate></ds:X509Data></ds:KeyInfo></md:KeyDescriptor><md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://stg-partner.hmg-corp.io/auth/saml/logout"/><md:SingleLogoutService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://stg-partner.hmg-corp.io/auth/saml/logout"/><md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:persistent</md:NameIDFormat><md:NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</md:NameIDFormat><md:NameIDFormat>urn:oasis:names:tc:SAML:2.0:nameid-format:transient</md:NameIDFormat><md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://stg-partner.hmg-corp.io/auth/saml/sso"/><md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://stg-partner.hmg-corp.io/auth/saml/sso"/></md:IDPSSODescriptor></md:EntityDescriptor>

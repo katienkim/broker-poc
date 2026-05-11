@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dealers Portal</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background: #f8f9fa; color: #333; }
+  h1 { border-bottom: 3px solid #003087; padding-bottom: 10px; margin-bottom: 24px; }
+  .user-card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+  .user-info { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+  .user-name { font-size: 20px; font-weight: 700; }
+  .tag { display: inline-block; padding: 3px 10px; border-radius: 3px; font-size: 12px; font-weight: bold; margin-left: 8px; }
+  .tag-ext { background: #e50000; color: #fff; }
+  .attr { font-size: 13px; color: #666; }
+  .attr strong { color: #333; }
+  .logout-btn { padding: 8px 16px; border: 1px solid #ccc; border-radius: 4px; text-decoration: none; color: #333; font-size: 13px; }
+  .logout-btn:hover { background: #eee; }
+  .error-banner { background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; padding: 12px 16px; margin-bottom: 20px; color: #856404; }
+  .error-banner strong { color: #664d03; }
+  .section { margin-bottom: 24px; }
+  .section h2 { font-size: 16px; color: #555; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #eee; }
+  .app-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .app-card { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px; text-align: center; text-decoration: none; color: #333; transition: box-shadow 0.15s; border-left: 3px solid #e50000; }
+  .app-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.12); border-color: #003087; }
+  .app-card .name { font-size: 14px; font-weight: 600; }
+  .app-card .port { font-size: 11px; color: #999; margin-top: 4px; }
+  .app-card .deprecated { font-size: 10px; color: #c62828; margin-top: 2px; }
+  details { margin-top: 20px; }
+  details summary { cursor: pointer; font-size: 13px; color: #666; }
+  pre { background: #fff; border: 1px solid #ddd; padding: 12px; border-radius: 6px; overflow: auto; font-size: 11px; max-height: 300px; }
+</style>
+</head>
+<body>
+
+<h1>Dealers Portal</h1>
+
+<div class="user-card">
+  <div class="user-info">
+    <div>
+      <span class="user-name">{{USERNAME}}</span>
+      <span class="tag tag-ext">{{USER_TYPE}}</span>
+    </div>
+    <span class="attr"><strong>Role:</strong> {{ROLE}}</span>
+    <span class="attr"><strong>Brand:</strong> {{BRAND}}</span>
+    <span class="attr"><strong>Dealer:</strong> {{DEALER_CODE}}</span>
+  </div>
+  <a class="logout-btn" href="/logout">Logout</a>
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const error = params.get('error');
+  const target = params.get('target');
+  if (error) {
+    const banner = document.createElement('div');
+    banner.className = 'error-banner';
+    banner.innerHTML = '<strong>' + error + '</strong>: Access denied' + (target ? ' for <em>' + target + '</em>' : '');
+    document.querySelector('.user-card').after(banner);
+  }
+</script>
+
+<div class="section">
+  <h2>Vendor Apps</h2>
+  <div class="app-grid">
+    <a class="app-card" href="/launch/vendor-igtk">
+      <div class="name">IGTK Vendor A</div>
+      <div class="port">JWT token</div>
+    </a>
+    <a class="app-card" href="/launch/vendor-saml">
+      <div class="name">SAML Vendor App</div>
+      <div class="port">SAML assertion</div>
+    </a>
+    <a class="app-card" href="/launch/vendor-aes256">
+      <div class="name">AES256 Vendor App</div>
+      <div class="port">encrypted token</div>
+    </a>
+    <a class="app-card" href="/launch/vendor-rc4">
+      <div class="name">RC4 Vendor App</div>
+      <div class="port">legacy encrypted</div>
+      <div class="deprecated">DEPRECATED</div>
+    </a>
+    <a class="app-card" href="/launch/vendor-wpc">
+      <div class="name">WPC MOBIS Parts</div>
+      <div class="port">OTP token</div>
+    </a>
+  </div>
+</div>
+
+<details>
+  <summary>Show session data</summary>
+  <pre id="user-data">{{USER_JSON}}</pre>
+</details>
+
+</body>
+</html>

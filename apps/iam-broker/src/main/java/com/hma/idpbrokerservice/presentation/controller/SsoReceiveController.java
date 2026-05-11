@@ -7,6 +7,7 @@ import com.hma.idpbrokerservice.sso.entity.SsoTokenHistory;
 import com.hma.idpbrokerservice.sso.repository.SsoTokenHistoryRepository;
 import com.hma.idpbrokerservice.sso.service.PublishTokenService;
 import com.hma.idpbrokerservice.sso.service.client.DashboardEventClient;
+import com.hma.idpbrokerservice.sso.service.support.MockPidTokenVerifier;
 import com.hma.idpbrokerservice.sso.service.support.NonceStore;
 import com.hma.idpbrokerservice.sso.token.WpcOtpTokenGenerator;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +17,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -42,6 +41,7 @@ public class SsoReceiveController {
     private final WpcOtpTokenGenerator wpcGen;
     private final DashboardEventClient dashboard;
     private final NonceStore nonceStore;
+    private final MockPidTokenVerifier mockPidTokenVerifier;
 
     private static final long CSRF_TTL_MS = 5 * 60_000L;
 
@@ -54,7 +54,15 @@ public class SsoReceiveController {
         }
 
         // Pull user_id + target_vendor + source_system out of the launch token.
-        Map<String, String> claims = decodeClaims(launchTokenRaw);
+        // Verifier honors sso.mock-pid.require-signature: HS256 when true,
+        // legacy base64 decode when false.
+        Map<String, String> claims;
+        try {
+            claims = mockPidTokenVerifier.verifyAndExtractClaims(launchTokenRaw);
+        } catch (MockPidTokenVerifier.VerificationException e) {
+            log.warn("[SsoReceive] launch_token rejected: {}", e.getMessage());
+            return errorPage("Launch token verification failed: " + e.getMessage());
+        }
         String uid = claims.getOrDefault("user_id", "");
         String target = claims.getOrDefault("target_vendor", "");
         String source = claims.getOrDefault("source_system", "");
@@ -165,22 +173,4 @@ public class SsoReceiveController {
                 .replace("<", "&lt;").replace(">", "&gt;");
     }
 
-    /** Best-effort claim grab from the unsigned launch token. */
-    private static Map<String, String> decodeClaims(String launchTokenRaw) {
-        Map<String, String> out = new LinkedHashMap<>();
-        try {
-            String[] parts = launchTokenRaw.split("\\.");
-            if (parts.length < 2) return out;
-            String json = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-            for (String key : new String[] {"user_id", "target_vendor", "source_system", "jti"}) {
-                String marker = "\"" + key + "\":\"";
-                int idx = json.indexOf(marker);
-                if (idx < 0) continue;
-                int s = idx + marker.length();
-                int e = json.indexOf('"', s);
-                if (e > s) out.put(key, json.substring(s, e));
-            }
-        } catch (Exception ignored) {}
-        return out;
-    }
 }

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSO Flow Dashboard</title>
+<style>
+  :root {
+    --blue: #003087; --red: #e50000; --green: #2e7d32; --purple: #7b1fa2;
+    --orange: #f57c00; --teal: #00796b; --gray: #666; --bg: #0d1117;
+    --card: #161b22; --border: #30363d; --text: #e6edf3; --muted: #8b949e;
+    --code-bg: #1c2128;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  .topbar { background: var(--card); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .topbar h1 { font-size: 18px; color: var(--text); }
+  .topbar h1 span { color: var(--red); }
+  .topbar-links { display: flex; gap: 12px; font-size: 13px; }
+  .topbar-links a { color: var(--muted); text-decoration: none; padding: 4px 10px; border-radius: 4px; border: 1px solid var(--border); }
+  .topbar-links a:hover { color: var(--text); border-color: var(--muted); }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+  .tabs { display: flex; gap: 0; margin-bottom: 24px; border-bottom: 2px solid var(--border); }
+  .tab { padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--text); border-bottom-color: var(--red); }
+  .tab .badge { display: inline-block; background: var(--border); color: var(--muted); padding: 1px 7px; border-radius: 10px; font-size: 11px; margin-left: 6px; }
+  .tab.active .badge { background: var(--red); color: #fff; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .launch-panel { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+  .launch-panel h3 { font-size: 14px; color: var(--muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .launch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .launch-btn { display: block; padding: 12px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; text-decoration: none; color: var(--text); text-align: center; font-size: 13px; font-weight: 600; transition: all 0.15s; cursor: pointer; }
+  .launch-btn:hover { border-color: var(--blue); background: #1a2332; }
+  .launch-btn .sub { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 4px; }
+  .launch-btn.danger { border-color: #c62828; }
+  .launch-btn.danger:hover { background: #2a1515; }
+
+  .flow-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 16px; overflow: hidden; }
+  .flow-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+  .flow-header:hover { background: #1c2128; }
+  .flow-meta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .flow-type-badge { padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+  .flow-type-badge.idp { background: #1a3a1a; color: #4caf50; border: 1px solid #2e7d32; }
+  .flow-type-badge.sp { background: #1a2a3a; color: #64b5f6; border: 1px solid #1976d2; }
+  .flow-user { font-weight: 600; color: var(--green); }
+  .flow-target { color: #58a6ff; font-weight: 600; }
+  .flow-id { font-family: monospace; font-size: 11px; color: var(--muted); }
+  .flow-time { font-size: 12px; color: var(--muted); }
+  .flow-step-count { font-size: 12px; color: var(--muted); }
+
+  .steps-timeline { padding: 0; }
+  .step-row { display: flex; gap: 16px; padding: 16px 18px; border-bottom: 1px solid #21262d; position: relative; }
+  .step-row:last-child { border-bottom: none; }
+  .step-row::before { content: ''; position: absolute; left: 34px; top: 48px; bottom: 0; width: 2px; background: #21262d; }
+  .step-row:last-child::before { display: none; }
+
+  .step-num { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; color: #fff; flex-shrink: 0; position: relative; z-index: 1; }
+  .step-num.portal { background: var(--orange); }
+  .step-num.broker { background: var(--blue); }
+  .step-num.pid { background: var(--green); }
+  .step-num.vendor { background: var(--purple); }
+  .step-num.azuread { background: var(--teal); }
+
+  .step-body { flex: 1; min-width: 0; }
+  .step-title-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+  .step-title { font-weight: 600; font-size: 14px; }
+  .step-service { font-size: 11px; padding: 1px 6px; border-radius: 3px; font-weight: 600; }
+  .step-service.portal { background: #2a1f0a; color: var(--orange); }
+  .step-service.broker { background: #0a1a2a; color: #64b5f6; }
+  .step-service.pid { background: #0a2a0a; color: #81c784; }
+  .step-service.vendor { background: #1a0a2a; color: #ce93d8; }
+  .step-service.azuread { background: #0a2a2a; color: #80cbc4; }
+
+  .step-desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin-top: 4px; }
+  .step-time { font-size: 11px; color: #484f58; margin-top: 4px; }
+
+  .payload-section { margin-top: 10px; }
+  .payload-toggle { font-size: 12px; color: #58a6ff; cursor: pointer; user-select: none; display: inline-flex; align-items: center; gap: 4px; padding: 2px 0; }
+  .payload-toggle:hover { text-decoration: underline; }
+  .payload-box { margin-top: 8px; background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 14px; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 11px; max-height: 400px; overflow: auto; white-space: pre-wrap; word-break: break-all; color: #adbac7; line-height: 1.5; }
+
+  .redirect-gate { margin-top: 10px; background: #2a2000; border: 1px solid #f57c00; border-radius: 6px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
+  .redirect-gate .icon { font-size: 20px; }
+  .redirect-gate .info { flex: 1; }
+  .redirect-gate .info .label { font-size: 12px; color: var(--orange); font-weight: 600; }
+  .redirect-gate .info .url { font-size: 11px; color: var(--muted); font-family: monospace; margin-top: 2px; word-break: break-all; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-state h3 { color: var(--text); margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>SSO Flow <span>Dashboard</span></h1>
+  <div class="topbar-links">
+    <a href="http://portal.sso.test:8000" target="_blank">Portal</a>
+    <a href="http://broker.sso.test:8000" target="_blank">Broker API</a>
+    <a href="#" onclick="resetAll()">🗑 Reset Flows</a>
+    <a href="#" onclick="loadFlows()">↻ Refresh</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- SSO Flow -->
+  <div id="tab-idp">
+    <div class="launch-panel">
+      <h3>IdP-Initiated SSO Flow (per PDF Design)</h3>
+      <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
+        Pre-requisite: User logs into Dealers Portal via PID.<br>
+        SSO Flow: User clicks vendor link → Dealers backend requests launch token from PID (server-to-server) → PID validates &amp; issues token → Dealers redirects browser to PID → PID validates token &amp; redirects to Broker → Broker fetches attributes from Dealers → Broker generates vendor token → Vendor creates session.
+      </p>
+
+      <div style="margin-bottom:16px;padding:14px;background:#1c2128;border:1px solid var(--border);border-radius:6px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">Pre-requisite: Login to Dealers Portal (via PID)</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:8px;">The PDF assumes "the account is currently logged in to Dealers." This step gets you there.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <a class="launch-btn" href="http://portal.sso.test:8000/logout" target="_blank" style="border-color:#c62828;display:inline-block;">
+            🚪 Logout First<div class="sub">clear PID + broker sessions</div>
+          </a>
+          <a class="launch-btn" href="http://portal.sso.test:8000?dashboard=1" target="_blank" style="border-color:var(--green);display:inline-block;">
+            ▶ Login to Dealers Portal<div class="sub">PID Login → Portal loads</div>
+          </a>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;padding:14px;background:#1c2128;border:1px solid var(--border);border-radius:6px;">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;">SSO Flow: Click vendor app (PDF Steps 1-14)</div>
+        <p style="font-size:12px;color:var(--muted);margin-bottom:10px;">After login, click a vendor. No second login — PID session is reused. Dealers backend calls PID API for launch token, then browser redirects through PID to Broker.</p>
+        <div class="launch-grid">
+          <a class="launch-btn idp-launch" href="http://portal.sso.test:8000/launch/vendor-igtk?dashboard=1" target="_blank">
+            IGTK Vendor A<div class="sub">JWT token</div>
+          </a>
+          <a class="launch-btn idp-launch" href="http://portal.sso.test:8000/launch/vendor-saml?dashboard=1" target="_blank">
+            SAML Vendor<div class="sub">SAML 2.0 assertion</div>
+          </a>
+          <a class="launch-btn idp-launch" href="http://portal.sso.test:8000/launch/vendor-aes256?dashboard=1" target="_blank">
+            AES-256 Vendor<div class="sub">encrypted token</div>
+          </a>
+          <a class="launch-btn idp-launch" href="http://portal.sso.test:8000/launch/vendor-rc4?dashboard=1" target="_blank">
+            RC4 Vendor<div class="sub">legacy (deprecated)</div>
+          </a>
+          <a class="launch-btn idp-launch" href="http://portal.sso.test:8000/launch/vendor-wpc?dashboard=1" target="_blank">
+            WPC MOBIS Parts<div class="sub">OTP token</div>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div id="flows-idp"></div>
+  </div>
+
+</div>
+
+<script>
+const openPayloads = new Set();
+let lastIdpHtml = '';
+function togglePayload(id, event) {
+  if (event) event.stopPropagation();
+  const el = document.getElementById(id);
+  if (!el) return;
+  const isOpen = el.style.display === 'block';
+  el.style.display = isOpen ? 'none' : 'block';
+  if (isOpen) openPayloads.delete(id);
+  else openPayloads.add(id);
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+function formatPayload(data) {
+  if (typeof data === 'string') return data;
+  return JSON.stringify(data, null, 2);
+}
+
+// Generate a stable unique ID for a payload box.
+// Uses flowId + step number (with dot replaced) + payload index.
+function makePayloadId(flowId, step, index) {
+  const safeFlow = flowId.replace(/[^a-zA-Z0-9]/g, '');
+  const safeStep = String(step).replace('.', 'd');
+  return 'pl_' + safeFlow + '_s' + safeStep + '_' + index;
+}
+
+function renderStep(step, flowId) {
+  const svc = step.service || 'broker';
+
+  let html = '<div class="step-row">';
+  html += '<div class="step-num ' + svc + '">' + step.step + '</div>';
+  html += '<div class="step-body">';
+  html += '<div class="step-title-row">';
+  html += '<span class="step-title">' + esc(step.stepName || 'Step ' + step.step) + '</span>';
+  html += '<span class="step-service ' + svc + '">' + esc(svc) + '</span>';
+  html += '</div>';
+  html += '<div class="step-desc">' + esc(step.description || '') + '</div>';
+  html += '<div class="step-time">' + (step.ts ? new Date(step.ts).toLocaleTimeString() : '') + '</div>';
+
+  // Collect payloads
+  const payloads = [];
+  if (step.httpRequest) payloads.push({ label: 'HTTP Request', data: step.httpRequest });
+  if (step.httpResponse) payloads.push({ label: 'HTTP Response', data: step.httpResponse });
+  if (step.samlRequest) payloads.push({ label: 'SAMLRequest XML', data: step.samlRequest });
+  if (step.samlResponse) {
+    const d = step.samlResponse.length > 5000
+      ? step.samlResponse.substring(0, 5000) + '\n\n<!-- truncated (' + step.samlResponse.length + ' chars) -->'
+      : step.samlResponse;
+    payloads.push({ label: 'SAMLResponse XML', data: d });
+  }
+  if (step.tokenPayload) payloads.push({ label: 'Token Payload', data: step.tokenPayload });
+  if (step.sessionData) payloads.push({ label: 'Session Data', data: step.sessionData });
+  if (step.permissionCheck) payloads.push({ label: 'Permission Check', data: step.permissionCheck });
+  if (step.detail && Object.keys(step.detail).length > 0) payloads.push({ label: 'Detail', data: step.detail });
+
+  if (payloads.length > 0) {
+    html += '<div class="payload-section">';
+    for (let i = 0; i < payloads.length; i++) {
+      const pid = makePayloadId(flowId, step.step, i);
+      const isOpen = openPayloads.has(pid);
+      html += '<div style="margin-top:6px;">';
+      html += '<span class="payload-toggle" onclick="togglePayload(\'' + pid + '\', event)">' + (isOpen ? '▼' : '▶') + ' ' + esc(payloads[i].label) + '</span>';
+      html += '<div class="payload-box" id="' + pid + '" style="display:' + (isOpen ? 'block' : 'none') + '">' + esc(formatPayload(payloads[i].data)) + '</div>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+
+  if (step.redirect) {
+    html += '<div class="redirect-gate">';
+    html += '<div class="icon">↗️</div>';
+    html += '<div class="info">';
+    html += '<div class="label">REDIRECT → ' + esc(step.redirect.description || '') + '</div>';
+    html += '<div class="url">' + esc(step.redirect.url || '') + '</div>';
+    html += '</div></div>';
+  }
+
+  html += '</div></div>';
+  return html;
+}
+
+function renderFlow(flow) {
+  const steps = (flow.steps || []).slice().sort((a, b) => (a.step || 0) - (b.step || 0));
+  const user = steps.find(s => s.detail?.uid || s.detail?.username)?.detail?.uid
+    || steps.find(s => s.detail?.username)?.detail?.username || '';
+  const target = steps.find(s => s.detail?.target)?.detail?.target || '';
+  const isIdp = flow.flowType === 'idp-initiated';
+
+  // Build display name
+  let displayName = flow.flowName || '';
+  if (!displayName) {
+    if (user && target) displayName = user + ' → ' + target;
+    else if (user) displayName = user;
+    else displayName = flow.flowId.substring(0, 20);
+  }
+  // Append user if flowName doesn't already contain it
+  if (displayName && user && !displayName.includes(user)) {
+    displayName += ' — ' + user;
+  }
+
+  let html = '<div class="flow-card">';
+  html += '<div class="flow-header" onclick="var b=this.nextElementSibling;b.style.display=b.style.display===\'none\'?\'block\':\'none\'">';
+  html += '<div class="flow-meta">';
+  html += '<span class="flow-type-badge ' + (isIdp ? 'idp' : 'sp') + '">' + (isIdp ? 'IdP' : 'SP') + '</span>';
+  html += '<span style="font-weight:600;color:var(--text);">' + esc(displayName) + '</span>';
+  html += '<span class="flow-id">' + esc(flow.flowId.substring(0, 16)) + '…</span>';
+  html += '</div><div style="display:flex;align-items:center;gap:12px;">';
+  html += '<span class="flow-step-count">' + steps.length + ' steps</span>';
+  html += ' · <span class="flow-time">' + new Date(flow.startedAt).toLocaleTimeString() + '</span>';
+  html += '<span onclick="deleteFlow(\'' + esc(flow.flowId) + '\', event)" style="cursor:pointer;color:#c62828;font-size:12px;padding:2px 6px;border:1px solid #c62828;border-radius:3px;opacity:0.6;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.6">✕</span>';
+  html += '</div></div>';
+
+  html += '<div class="steps-timeline">';
+  for (const step of steps) {
+    html += renderStep(step, flow.flowId);
+  }
+  html += '</div></div>';
+  return html;
+}
+
+function renderEmpty() {
+  return '<div class="empty-state"><h3>No SSO flows yet</h3><p>Click "Start Full Flow" above to begin. The flow will open in a new tab.<br>Steps will appear here as they happen.</p></div>';
+}
+
+async function loadFlows() {
+  try {
+    const res = await fetch('/api/flows');
+    const allFlows = await res.json();
+    const flows = allFlows.filter(f => f.flowType === 'idp-initiated');
+    const container = document.getElementById('flows-idp');
+    const newHtml = flows.length > 0 ? flows.map(renderFlow).join('') : renderEmpty();
+    if (newHtml !== lastIdpHtml) {
+      container.innerHTML = newHtml;
+      lastIdpHtml = newHtml;
+    }
+  } catch (err) {
+    console.error('Failed to load flows:', err);
+  }
+}
+
+async function resetAll() {
+  if (!confirm('Reset all flow data?')) return;
+  await fetch('/api/reset', { method: 'DELETE' });
+  lastIdpHtml = '';
+  openPayloads.clear();
+  loadFlows();
+}
+
+async function deleteFlow(flowId, event) {
+  if (event) { event.stopPropagation(); event.preventDefault(); }
+  await fetch('/api/flow/' + encodeURIComponent(flowId), { method: 'DELETE' });
+  lastIdpHtml = '';
+  loadFlows();
+}
+
+loadFlows();
+setInterval(loadFlows, 3000);
+</script>
+</body>
+</html>

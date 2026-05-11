@@ -55,7 +55,7 @@ services:
 
   # Node mocks — built straight out of ../poc/apps. Unchanged.
   role-api:
-    build: ../poc/apps/role-api
+    build: ./apps/role-api
     restart: unless-stopped
     networks:
       - broker-spring-net
@@ -81,6 +81,28 @@ services:
       BROKER_PUBLIC_URL: http://broker.sso.test:8000
       PID_VALIDATE_URL: http://mock-pid:3006/auth/validate-launch-token
       DASHBOARD_URL: http://flow-dashboard:3007
+      # SAML SP — Phase 2. Set SSO_SAML_SP_ENABLED=false to skip if no keystore yet.
+      SSO_SAML_SP_ENABLED: ${SSO_SAML_SP_ENABLED:-true}
+      SAML_SP_ENTITY_ID: ${SAML_SP_ENTITY_ID:-http://broker.sso.test:8000/sso/saml/metadata}
+      SAML_SP_KEYSTORE: ${SAML_SP_KEYSTORE:-/keystore/broker-sp.p12}
+      SAML_SP_KEYSTORE_PASSWORD: ${SAML_SP_KEYSTORE_PASSWORD:-changeit}
+      SAML_SP_KEY_ALIAS: ${SAML_SP_KEY_ALIAS:-broker-sp}
+      SAML_SP_ACS_URL: ${SAML_SP_ACS_URL:-http://broker.sso.test:8000/sso/saml/acs/pid}
+      SAML_IDP_ENTITY_ID: ${SAML_IDP_ENTITY_ID:-https://stg-partner.hmg-corp.io/auth}
+      SAML_IDP_METADATA_PATH: ${SAML_IDP_METADATA_PATH:-/idp-metadata/pid-metadata.xml}
+      # IdP-role keystore (outbound SAML to vendors) — optional.
+      SAML_IDP_KEYSTORE: ${SAML_IDP_KEYSTORE:-/keystore/broker-idp.p12}
+      SAML_IDP_KEYSTORE_PASSWORD: ${SAML_IDP_KEYSTORE_PASSWORD:-changeit}
+      SAML_IDP_KEY_ALIAS: ${SAML_IDP_KEY_ALIAS:-broker-idp}
+      # Phase 4 — mock-pid launch token HS256 enforcement.
+      # Flip to true after applying the mock-pid HS256 patch (see Phase 4 docs).
+      MOCK_PID_REQUIRE_SIGNATURE: ${MOCK_PID_REQUIRE_SIGNATURE:-false}
+      MOCK_PID_SHARED_SECRET: ${MOCK_PID_SHARED_SECRET:-poc-mock-pid-shared-hs256-secret-min-32-bytes!}
+    volumes:
+      # SP + IdP signing keystores (generated locally via keytool; never in git)
+      - ./apps/iam-broker/keystore:/keystore:ro
+      # Upstream IdP metadata (PID) — copied from /Users/katiekim/Projects/IdP/metadata
+      - ./apps/iam-broker/idp-metadata:/idp-metadata:ro
     labels:
       - traefik.enable=true
       - traefik.http.routers.iam-broker.rule=Host(`broker.sso.test`)
@@ -103,7 +125,7 @@ services:
       start_period: 60s
 
   mock-pid:
-    build: ../poc/apps/mock-pid
+    build: ./apps/mock-pid
     restart: unless-stopped
     environment:
       DASHBOARD_URL: http://flow-dashboard:3007
@@ -123,7 +145,7 @@ services:
       retries: 5
 
   app-portal:
-    build: ../poc/apps/portal
+    build: ./apps/portal
     restart: unless-stopped
     environment:
       BROKER_PUBLIC_URL: http://broker.sso.test:8000
@@ -144,7 +166,7 @@ services:
       - broker-spring-net
 
   app-vendor-app:
-    build: ../poc/apps/vendor-app
+    build: ./apps/vendor-app
     restart: unless-stopped
     environment:
       BROKER_URL: http://iam-broker:3003
@@ -170,7 +192,7 @@ services:
       retries: 5
 
   flow-dashboard:
-    build: ../poc/apps/dashboard
+    build: ./apps/dashboard
     restart: unless-stopped
     environment:
       BROKER_URL: http://iam-broker:3003

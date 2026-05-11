@@ -23,6 +23,14 @@ env/
 .env
 .env.local
 
+# SAML signing keystores (POC-only, never commit)
+apps/iam-broker/keystore/*.p12
+apps/iam-broker/keystore/*.jks
+
+# Test SAML harness artifacts
+apps/iam-broker/idp-metadata/test-idp-metadata.xml
+apps/iam-broker/idp-metadata/*.real.bak
+
 # Docker
 .docker-data/
 
